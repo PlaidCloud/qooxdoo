@@ -608,9 +608,6 @@ qx.Class.define("qx.ui.table.model.Simple",
         startIndex = this._rowArr.length;
       }
 
-      // store the original length before we alter rowArr for use in splice.apply
-      var rowArrLength = rowArr.length;
-
       // Prepare the rowArr so it can be used for apply
       rowArr.splice(0, 0, startIndex, 0);
 
@@ -621,7 +618,7 @@ qx.Class.define("qx.ui.table.model.Simple",
       var data =
       {
         firstRow    : startIndex,
-        lastRow     : startIndex + rowArrLength - 1,
+        lastRow     : this._rowArr.length - 1,
         firstColumn : 0,
         lastColumn  : this.getColumnCount() - 1
       };
