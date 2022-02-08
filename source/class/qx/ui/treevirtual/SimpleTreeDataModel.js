@@ -795,7 +795,7 @@ qx.Class.define("qx.ui.treevirtual.SimpleTreeDataModel", {
      * Sets the whole data en bulk, or notifies the data model that node
      * modifications are complete.
      *
-     * @param nodeArr {Array | null}
+     * @param [nodeArr] {Array | null}
      *   Pass either an Array of node objects, or null.
      *
      *   If non-null, nodeArr is an array of node objects containing the
@@ -907,9 +907,12 @@ qx.Class.define("qx.ui.treevirtual.SimpleTreeDataModel", {
      *   {@link SimpleTreeDataModel}.  Each property value will be assigned
      *   to the corresponding property of the node specified by nodeId.
      *
+     * @param suppressRedraw {Boolean}
+     *    If true then prevents redraw upon expand/contract. Useful if expanding/contracting many
+     *
      * @throws {Error} If the node object or id is not valid.
      */
-    setState(nodeReference, attributes) {
+    setState(nodeReference, attributes, suppressRedraw) {
       var node;
       var nodeId;
 
@@ -1003,7 +1006,9 @@ qx.Class.define("qx.ui.treevirtual.SimpleTreeDataModel", {
 
             // Re-render the row data since formerly visible rows may now be
             // invisible, or vice versa.
-            this.setData();
+            if (!suppressRedraw) {
+              this.setData();
+            }
             break;
 
           default:
@@ -1099,6 +1104,76 @@ qx.Class.define("qx.ui.treevirtual.SimpleTreeDataModel", {
       return (
         this.__tree.getAllowNodeEdit() && this.getNodeFromRow(rowIndex).bCanEdit
       );
+    },
+
+    /**
+     * Expands all nodes in the tree with minimal redraw
+     */
+    expandAll() {
+      this._nodeArr.forEach(node => {
+        if (node) {
+          this.setState(node.nodeId, {bOpened: true}, true);
+        }
+      });
+      this.setData();
+    },
+
+    /**
+     * Collapses all nodes in the tree with minimal redraw
+     */
+    collapseAll() {
+      this._nodeArr.forEach(node => {
+        if (node) {
+          this.setState(node.nodeId, {bOpened: false}, true);
+        }
+      });
+      this.setData();
+    },
+
+    /**
+     * Collapses all nodes beneath supplied node
+     * @param nodeReference {object, number}
+     */
+    collapseBeneath(nodeReference) {
+      this._setOpenedState(nodeReference, false, true);
+      this.setData();
+    },
+
+    /**
+     * Expands all nodes beneath supplied node
+     * @param nodeReference {object, number}
+     */
+    expandBeneath(nodeReference) {
+      this._setOpenedState(nodeReference, true, true);
+      this.setData();
+    },
+
+    /**
+     * Collapses all nodes beneath supplied node
+     * @param nodeReference {object, number} start node
+     * @param opened {boolean} Open or Close the nodes
+     * @param cascade {boolean} Whether to descend the tree changing state of all children
+     */
+    _setOpenedState(nodeReference, opened, cascade) {
+      var node;
+      var nodeId;
+
+      if (typeof nodeReference == "object") {
+        node = nodeReference;
+        nodeId = node.nodeId;
+      } else if (typeof nodeReference == "number") {
+        nodeId = nodeReference;
+        node = this._nodeArr[nodeId];
+      }
+      if (!node) {
+        return;
+      }
+      this.setState(node.nodeId, {bOpened: opened}, true);
+      if (cascade) {
+        node.children.forEach(child => this._setOpenedState(child, opened, cascade));
+      } else {
+        this.setData();
+      }
     }
   },
 
