@@ -1973,7 +1973,7 @@ qx.Class.define("qx.ui.table.pane.Scroller", {
     _onFocusinCellEditorAddBlurListener(e) {
       this.debug("executed FOCUSIN event listener for hash: " + e.getTarget().$$hash);
       qx.event.Timer.once(function() {
-        this._cellEditor.addListenerOnce('blur', this._onBlurCellEditorStopEditing, this);
+        this._cellEditor.addListenerOnce('focusout', this._onBlurCellEditorStopEditing, this);
         this.debug('added BLUR listener to hash: ' + this._cellEditor.$$hash);
       }, this, 0);
     },
