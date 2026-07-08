@@ -1973,6 +1973,12 @@ qx.Class.define("qx.ui.table.pane.Scroller", {
     _onFocusinCellEditorAddBlurListener(e) {
       this.debug("executed FOCUSIN event listener for hash: " + e.getTarget().$$hash);
       qx.event.Timer.once(function() {
+        // Editing may have stopped (cell editor destroyed and nulled by
+        // cancelEditing/flushEditor) or the scroller been disposed during the
+        // 1ms delay; bail before dereferencing the now-null cell editor.
+        if (this.isDisposed() || this._cellEditor == null) {
+          return;
+        }
         this._cellEditor.addListener('focusout', this._onFocusoutCellEditorStopEditing, this);
         this.debug('added FOCUSOUT listener to hash: ' + this._cellEditor.$$hash);
       }, this, 1);
