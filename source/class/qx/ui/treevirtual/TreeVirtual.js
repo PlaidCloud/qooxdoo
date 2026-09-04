@@ -196,8 +196,16 @@ qx.Class.define("qx.ui.treevirtual.TreeVirtual", {
       tcm.setDataCellRenderer(i, i == treeCol ? stdcr : ddcr);
     }
 
-    // Set the data row renderer.
+    // Set the data row renderer, disposing the one qx.ui.table.Table's
+    // constructor allocated. The dataRowRenderer property does not own its
+    // value, and Table's destructor disposes only whichever renderer is
+    // current, so replacing it here would otherwise orphan that instance for
+    // the life of the page.
+    var previousRowRenderer = this.getDataRowRenderer();
     this.setDataRowRenderer(custom.dataRowRenderer);
+    if (previousRowRenderer && previousRowRenderer !== custom.dataRowRenderer) {
+      previousRowRenderer.dispose();
+    }
 
     // Set the editor for the tree column, for use if allowNodeEdit is true
     tcm.setCellEditorFactory(
